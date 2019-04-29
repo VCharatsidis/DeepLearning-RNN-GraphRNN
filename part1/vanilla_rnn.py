@@ -31,15 +31,15 @@ class VanillaRNN(nn.Module):
         super(VanillaRNN, self).__init__()
         # Initialization here ...
 
-        self.W_hx = torch.nn.Parameter(torch.zeros(num_hidden, 1))
+        self.W_hx = torch.nn.Parameter(torch.zeros(1, num_hidden))
         torch.nn.init.xavier_uniform_(self.W_hx)
 
-        self.W_hh = nn.Parameter(torch.zeros(num_hidden, num_classes))
+        self.W_hh = nn.Parameter(torch.zeros(num_hidden, num_hidden))
         torch.nn.init.xavier_uniform_(self.W_hh)
 
-        self.b_h = nn.Parameter(torch.zeros(batch_size))
+        self.b_h = nn.Parameter(torch.zeros(num_hidden))
 
-        self.W_ph = torch.nn.Parameter(torch.zeros(num_classes, num_hidden))
+        self.W_ph = torch.nn.Parameter(torch.zeros(num_hidden, num_classes))
         torch.nn.init.xavier_uniform_(self.W_ph)
 
         self.b_p = torch.nn.Parameter(torch.zeros(num_classes))
@@ -49,34 +49,28 @@ class VanillaRNN(nn.Module):
         self.num_hidden = num_hidden
         self.device = device
         self.num_classes = num_classes
+        self.input_dim = input_dim
 
     def forward(self, x):
         # Implementation here ...
-        y_prev = torch.zeros(self.batch_size, 1)
+        y_prev = torch.zeros(self.batch_size, self.num_hidden)
 
         for i in range(self.seq_length):
 
             input = x.narrow(1, i, 1)
 
-            a = torch.mm(self.W_hx, input.transpose(1, 0))
+            a = torch.mm(input, self.W_hx)
 
-            b = torch.mm(self.W_hh, y_prev.transpose(1, 0))
+            b = torch.mm(y_prev, self.W_hh)
 
-            linear = a + b
-
-            linear2 = linear + self.b_h
+            linear = a + b + self.b_h
 
             tanh = torch.nn.Tanh()
-            h = tanh(linear2)
+            y_prev = tanh(linear)
 
-            p = torch.mm(self.W_ph, h).transpose(1, 0) + self.b_p
+        p = torch.mm(y_prev, self.W_ph) + self.b_p
 
-            softmax = torch.nn.Softmax()
-            y = softmax(p)
-
-            y_prev = y
-
-        return y_prev
+        return p
 
 
 
