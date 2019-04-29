@@ -30,14 +30,18 @@ class VanillaRNN(nn.Module):
     def __init__(self, seq_length, input_dim, num_hidden, num_classes, batch_size, device='cpu'):
         super(VanillaRNN, self).__init__()
         # Initialization here ...
+
         self.W_hx = torch.nn.Parameter(torch.zeros(num_hidden, seq_length))
         torch.nn.init.xavier_uniform_(self.W_hx)
+
         self.W_hh = nn.Parameter(torch.zeros(num_hidden, num_classes))
         torch.nn.init.xavier_uniform_(self.W_hh)
-        self.b_h = nn.Parameter(torch.zeros(num_hidden))
+
+        self.b_h = nn.Parameter(torch.zeros(batch_size))
 
         self.W_ph = torch.nn.Parameter(torch.zeros(num_classes, num_hidden))
         torch.nn.init.xavier_uniform_(self.W_ph)
+
         self.b_p = torch.nn.Parameter(torch.zeros(num_classes))
 
         self.seq_length = seq_length
@@ -48,7 +52,7 @@ class VanillaRNN(nn.Module):
 
     def forward(self, x):
         # Implementation here ...
-        y_prev = torch.zeros(self.num_hidden, self.num_classes)
+        y_prev = torch.zeros(self.batch_size, self.num_classes)
 
         for i in range(self.seq_length):
 

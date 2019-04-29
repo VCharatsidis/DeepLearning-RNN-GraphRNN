@@ -29,6 +29,7 @@ from torch.utils.data import DataLoader
 from part1.dataset import PalindromeDataset
 from part1.vanilla_rnn import VanillaRNN
 from part1.lstm import LSTM
+import matplotlib.pyplot as plt
 
 # You may want to look into tensorboardX for logging
 # from tensorboardX import SummaryWriter
@@ -57,6 +58,7 @@ def train(config):
     criterion = torch.nn.CrossEntropyLoss()
 
     accuracies = []
+    losses = []
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
@@ -66,6 +68,7 @@ def train(config):
         loss.backward()
         ############################################################################
         # QUESTION: what happens here and why?
+        # we clip the gardients to prevent them from exploding, so to have a numeric overflow.
         ############################################################################
         torch.nn.utils.clip_grad_norm(model.parameters(), max_norm=config.max_norm)
         ############################################################################
@@ -74,18 +77,19 @@ def train(config):
         optimizer.zero_grad()
 
         loss = loss.item()
-        print(predictions.cpu().detach().numpy())
+
         preds = np.argmax(predictions.cpu().detach().numpy(), axis=1)
-        print(preds)
+
         targets = batch_targets.cpu().detach().numpy()
-        accuracy = np.sum(preds == targets) / batch_targets.shape[0]
+        accuracy = np.sum(preds == targets) / float(targets.shape[0])
 
         # Just for time measurement
         t2 = time.time()
         examples_per_second = config.batch_size/float(t2-t1)
 
         accuracies.append(accuracy)
-        if step % 10 == 0:
+        losses.append(loss)
+        if step % 500 == 0:
 
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, Examples/Sec = {:.2f}, "
                  "Accuracy = {:.2f}, Loss = {:.3f}".format(
@@ -98,6 +102,13 @@ def train(config):
             # https://github.com/pytorch/pytorch/pull/9655
             break
 
+    plt.plot(accuracies)
+    plt.ylabel('accuracies')
+    plt.show()
+
+    plt.plot(loss)
+    plt.ylabel('loss')
+    plt.show()
     print('Done training.')
     print("Length {} max. accuracy: {}".format(config.input_length, max(accuracies)))
  ################################################################################
@@ -114,11 +125,11 @@ if __name__ == "__main__":
     parser.add_argument('--input_dim', type=int, default=1, help='Dimensionality of input sequence')
     parser.add_argument('--num_classes', type=int, default=10, help='Dimensionality of output sequence')
     parser.add_argument('--num_hidden', type=int, default=128, help='Number of hidden units in the model')
-    parser.add_argument('--batch_size', type=int, default=8, help='Number of examples to process in a batch')
+    parser.add_argument('--batch_size', type=int, default=128, help='Number of examples to process in a batch')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--train_steps', type=int, default=10000, help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=10.0)
-    parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
+    parser.add_argument('--device', type=str, default="cuda:0", help="Training device 'cpu' or 'cuda:0'")
 
     config = parser.parse_args()
 
