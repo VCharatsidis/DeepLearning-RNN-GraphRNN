@@ -31,7 +31,7 @@ class VanillaRNN(nn.Module):
         super(VanillaRNN, self).__init__()
         # Initialization here ...
 
-        self.W_hx = torch.nn.Parameter(torch.zeros(num_hidden, seq_length))
+        self.W_hx = torch.nn.Parameter(torch.zeros(num_hidden, 1))
         torch.nn.init.xavier_uniform_(self.W_hx)
 
         self.W_hh = nn.Parameter(torch.zeros(num_hidden, num_classes))
@@ -52,11 +52,13 @@ class VanillaRNN(nn.Module):
 
     def forward(self, x):
         # Implementation here ...
-        y_prev = torch.zeros(self.batch_size, self.num_classes)
+        y_prev = torch.zeros(self.batch_size, 1)
 
         for i in range(self.seq_length):
 
-            a = torch.mm(self.W_hx, x.transpose(1, 0))
+            input = x.narrow(1, i, 1)
+
+            a = torch.mm(self.W_hx, input.transpose(1, 0))
 
             b = torch.mm(self.W_hh, y_prev.transpose(1, 0))
 

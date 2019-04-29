@@ -125,7 +125,7 @@ if __name__ == "__main__":
     parser.add_argument('--input_dim', type=int, default=1, help='Dimensionality of input sequence')
     parser.add_argument('--num_classes', type=int, default=10, help='Dimensionality of output sequence')
     parser.add_argument('--num_hidden', type=int, default=128, help='Number of hidden units in the model')
-    parser.add_argument('--batch_size', type=int, default=128, help='Number of examples to process in a batch')
+    parser.add_argument('--batch_size', type=int, default=8, help='Number of examples to process in a batch')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--train_steps', type=int, default=10000, help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=10.0)
