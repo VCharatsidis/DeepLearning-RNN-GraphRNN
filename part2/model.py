@@ -18,7 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import torch.nn as nn
-
+import torch
 
 class TextGenerationModel(nn.Module):
 
@@ -27,7 +27,19 @@ class TextGenerationModel(nn.Module):
 
         super(TextGenerationModel, self).__init__()
         # Initialization here...
+        self.lstm = nn.LSTM(vocabulary_size, lstm_num_hidden, lstm_num_layers)
+        self.linear = nn.Linear(lstm_num_hidden, vocabulary_size)
+
+
+        self.vocabulary_size = vocabulary_size
+
 
     def forward(self, x):
         # Implementation here...
-        pass
+
+        # Step through the sequence one element at a time.
+        # after each step, hidden contains the hidden state.
+        out, _ = self.lstm(x.view(1, 1, -1))
+
+        linear_out = self.linear(out, self.vocabulary_size)
+        return linear_out

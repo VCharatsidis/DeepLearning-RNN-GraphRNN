@@ -56,7 +56,6 @@ class VanillaRNN(nn.Module):
         y_prev = torch.zeros(self.batch_size, self.num_hidden)
 
         for i in range(self.seq_length):
-
             input = x.narrow(1, i, 1)
 
             a = torch.mm(input, self.W_hx)
@@ -71,6 +70,4 @@ class VanillaRNN(nn.Module):
         p = torch.mm(y_prev, self.W_ph) + self.b_p
 
         return p
-
-
 
