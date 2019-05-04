@@ -59,11 +59,13 @@ def train(config):
 
     accuracies = []
     losses = []
+    prev_accuracy = 0
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
         t1 = time.time()
         predictions = model.forward(batch_inputs)
+        optimizer.zero_grad()
         loss = criterion(predictions, batch_targets)
         loss.backward()
         ############################################################################
@@ -74,7 +76,7 @@ def train(config):
         ############################################################################
 
         optimizer.step()
-        optimizer.zero_grad()
+
 
         loss = loss.item()
 
@@ -83,13 +85,16 @@ def train(config):
         targets = batch_targets.cpu().detach().numpy()
         accuracy = np.sum(preds == targets) / float(targets.shape[0])
 
+        if accuracy > 0.98 and prev_accuracy > 0.98:
+            break
+        prev_accuracy = accuracy
+
         # Just for time measurement
         t2 = time.time()
         examples_per_second = config.batch_size/(float(t2-t1)+0.000000000001)
 
 
         if step % 500 == 0:
-
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, Examples/Sec = {:.2f}, "
                  "Accuracy = {:.2f}, Loss = {:.3f}".format(
                    datetime.now().strftime("%Y-%m-%d %H:%M"), step,
@@ -101,7 +106,8 @@ def train(config):
             # https://github.com/pytorch/pytorch/pull/9655
             break
 
-    for j in range(30):
+
+    for j, (batch_inputs, batch_targets) in enumerate(data_loader):
         model.eval()
         predictions = model.forward(batch_inputs)
         loss = criterion(predictions, batch_targets)
@@ -114,6 +120,9 @@ def train(config):
         targets = batch_targets.cpu().detach().numpy()
         accuracy = np.sum(preds == targets) / float(targets.shape[0])
         accuracies.append(accuracy)
+
+        if j > 29:
+            break
 
     print('Done training.')
     print("Length {} max. accuracy: {}".format(config.input_length, max(accuracies)))
@@ -150,7 +159,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser()
 
         # Model params
-        parser.add_argument('--model_type', type=str, default="RNN", help="Model type, should be 'RNN' or 'LSTM'")
+        parser.add_argument('--model_type', type=str, default="LSTM", help="Model type, should be 'RNN' or 'LSTM'")
         parser.add_argument('--input_length', type=int, default=i, help='Length of an input sequence')
         parser.add_argument('--input_dim', type=int, default=1, help='Dimensionality of input sequence')
         parser.add_argument('--num_classes', type=int, default=10, help='Dimensionality of output sequence')

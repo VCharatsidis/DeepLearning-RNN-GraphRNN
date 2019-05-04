@@ -84,8 +84,8 @@ class LSTM(nn.Module):
         y_prev = torch.zeros(self.batch_size, self.num_hidden)
         c_prev = torch.zeros(self.batch_size, self.num_hidden)
 
-        for i in range(self.seq_length):
-            input = x.narrow(1, i, 1)
+        for j in range(self.seq_length):
+            input = x.narrow(1, j, 1)
 
             # g
             linear_g = torch.mm(input, self.W_gx) + torch.mm(y_prev, self.W_gh) + self.b_g
@@ -102,7 +102,7 @@ class LSTM(nn.Module):
             f = sigmoid(linear_f)
 
             # o
-            linear_o = torch.mm(input, self.W_ox)+ torch.mm(y_prev, self.W_oh) + self.b_o
+            linear_o = torch.mm(input, self.W_ox) + torch.mm(y_prev, self.W_oh) + self.b_o
             o = sigmoid(linear_o)
 
             c = g * i + c_prev * f

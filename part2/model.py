@@ -31,15 +31,13 @@ class TextGenerationModel(nn.Module):
         self.linear = nn.Linear(lstm_num_hidden, vocabulary_size)
 
 
-        self.vocabulary_size = vocabulary_size
-
 
     def forward(self, x):
         # Implementation here...
 
         # Step through the sequence one element at a time.
         # after each step, hidden contains the hidden state.
-        out, _ = self.lstm(x.view(1, 1, -1))
+        out, _ = self.lstm(x)
 
-        linear_out = self.linear(out, self.vocabulary_size)
+        linear_out = self.linear(out)
         return linear_out
